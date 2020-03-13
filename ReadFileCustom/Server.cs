@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace ReadFileCustom {
     class Server {
-        private static List<Socket> clientSockets = new List<Socket>();
+        private static List<Socket> clientSockets;
         private static ManualResetEvent allDone = new ManualResetEvent(false);
         private static Thread _socketThread;
         private static Socket handler;
@@ -19,6 +19,7 @@ namespace ReadFileCustom {
             socket_port = port;
             _socketThread = new Thread(SocketThreadFunc);
             _socketThread.Start();
+            clientSockets = new List<Socket>();
             Console.WriteLine("Server started, waiting for a connection");
         }
 
@@ -27,10 +28,11 @@ namespace ReadFileCustom {
                 Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 IPAddress ipAddress = IPAddress.Any;
                 listener.Bind(new IPEndPoint(ipAddress, socket_port));
+                
+                listener.Listen(100);
 
                 while (true) {
                     allDone.Reset();
-                    listener.Listen(100);
                     listener.BeginAccept(AcceptCallback, listener);
                     allDone.WaitOne();
                 }
@@ -59,12 +61,29 @@ namespace ReadFileCustom {
                 byte[] msg = Encoding.ASCII.GetBytes(message);
 
                 foreach (Socket socket in clientSockets) {
-                    socket.Send(msg);
+                    Console.WriteLine("Client listed {0}", socket.RemoteEndPoint);
+
+                    if (SocketConnected(socket)) {
+                        socket.Send(msg);
+                        Console.WriteLine("Send client {0}, msg {1}", handler.RemoteEndPoint, message);
+                    }
                 }
+
+                Console.WriteLine(Environment.NewLine);
             }
             catch (Exception ex) {
                 Util.Log(ex.ToString());
             }
+        }
+
+        private static bool SocketConnected(Socket s) {
+            bool part1 = s.Poll(1000, SelectMode.SelectRead);
+            bool part2 = (s.Available == 0);
+
+            if (part1 && part2)
+                return false;
+            else
+                return true;
         }
 
         public static void CloseAll() {

@@ -5,14 +5,14 @@ using System.Security.Cryptography;
 
 namespace ReadFileCustom {
     class License {
-        public static Boolean VerifyLicence(string licence) {
+        public static bool VerifyLicence(string licence) {
             string hddSerial = GetHDDSerialNo();
             string mACAddress = GetMACAddress();
             string boardProductId = GetBoardProductId();
             string hashId = "DCOMApplicationSetting";
 
             string productIdentifier = (hddSerial + "-" + mACAddress + "-" + boardProductId + "-" + hashId).ToLower();
-            var sha1 = new System.Security.Cryptography.SHA1Managed();
+            var sha1 = new SHA1Managed();
             var plaintextBytes = Encoding.UTF8.GetBytes(productIdentifier);
             var hashBytes = sha1.ComputeHash(plaintextBytes);
             var sb = new StringBuilder();
@@ -44,7 +44,7 @@ namespace ReadFileCustom {
             return "Unknown";
         }
 
-        public static String GetHDDSerialNo() {
+        public static string GetHDDSerialNo() {
             ManagementClass mangnmt = new ManagementClass("Win32_LogicalDisk");
             ManagementObjectCollection mcol = mangnmt.GetInstances();
             string result = "";
@@ -52,15 +52,17 @@ namespace ReadFileCustom {
             foreach (ManagementObject strt in mcol) {
                 result += Convert.ToString(strt["VolumeSerialNumber"]);
             }
+
             return result;
         }
 
         public static string GetMACAddress() {
             ManagementClass mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
             ManagementObjectCollection moc = mc.GetInstances();
-            string MACAddress = String.Empty;
+            string MACAddress = string.Empty;
+
             foreach (ManagementObject mo in moc) {
-                if (MACAddress == String.Empty) {
+                if (MACAddress == string.Empty) {
                     if ((bool)mo["IPEnabled"] == true) MACAddress = mo["MacAddress"].ToString();
                 }
                 mo.Dispose();
@@ -75,13 +77,14 @@ namespace ReadFileCustom {
         }
 
         static string GetMd5Sum(string productIdentifier) {
-            System.Text.Encoder enc = System.Text.Encoding.Unicode.GetEncoder();
+            Encoder enc = Encoding.Unicode.GetEncoder();
             byte[] unicodeText = new byte[productIdentifier.Length * 2];
             enc.GetBytes(productIdentifier.ToCharArray(), 0, productIdentifier.Length, unicodeText, 0, true);
             MD5 md5 = new MD5CryptoServiceProvider();
             byte[] result = md5.ComputeHash(unicodeText);
 
             StringBuilder sb = new StringBuilder();
+
             for (int i = 0; i < result.Length; i++) {
                 sb.Append(result[i].ToString("X2"));
             }
@@ -94,6 +97,7 @@ namespace ReadFileCustom {
             StringBuilder licenseKey = new StringBuilder();
 
             int j = 0;
+
             for (int i = 0; i < 28; i++) {
                 for (j = i; j < 4 + i; j++) {
                     licenseKey.Append(serialArray[j]);

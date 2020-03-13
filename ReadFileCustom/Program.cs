@@ -7,12 +7,12 @@ namespace ReadFileCustom {
     class Program {
         public static IList<string> CallID;
         private const short DefaultLines = 5;
-        public static String Internal = "";
-        public static String External = "";
-        public static String file_in = "";
+        public static string Internal = "";
+        public static string External = "";
+        public static string file_in = "";
         public static int socket_port = 0;
-        public static String queue = "";
-        public static String license = "";
+        public static string queue = "";
+        public static string license = "";
         public static StreamWriter file = null;
 
         static void Main(string[] args) {
@@ -56,8 +56,7 @@ namespace ReadFileCustom {
 
         private static void Tail_Changed(object sender, Tail.TailEventArgs e) {
             try {
-                String tmp = "";
-                
+                string tmp = "";
 
                 if (e.Line.Contains("Status=Connected")) {
                     int index1 = e.Line.IndexOf("ExternalParty=") + 14;
